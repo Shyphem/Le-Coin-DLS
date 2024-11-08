@@ -3,7 +3,7 @@
 Bienvenue sur Le Coin DLS, une plateforme de petites annonces dédiée aux élèves de votre lycée. Inspiré par des sites comme Le Bon Coin, ce projet vise à faciliter l'achat, la vente et l'échange de manuels scolaires, de fournitures et d'autres articles entre les étudiants. Cette plateforme interne rend les échanges pratiques, sécurisés et adaptés aux besoins des élèves.
 
 ___
-📌 **##Objectifs du projet**
+📌 ##Objectifs du projet
 * Faciliter la revente et l'achat de fournitures scolaires : Permettre aux étudiants de publier des annonces pour vendre leurs manuels et autres articles scolaires.
 * Créer un environnement sécurisé pour les élèves : Restreindre l'accès à la plateforme aux étudiants inscrits et connectés.
 * Offrir une interface agréable et intuitive : Permettre une navigation facile et un affichage clair des annonces.
