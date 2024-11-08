@@ -45,12 +45,14 @@ document.addEventListener("DOMContentLoaded", function() {
                         },
                         body: JSON.stringify(annonce)
                     })
-                    .then(response => {
-                        if (response.ok) {
+                    .then(response => response.json())  // Assurez-vous de traiter la réponse JSON
+                    .then(data => {
+                        if (data.message) {
+                            // Si un message d'erreur est renvoyé par le serveur
+                            alert(data.message);  // Affiche le message d'erreur spécifique
+                        } else {
                             alert("Annonce postée avec succès !");
                             window.location.href = "index.html"; // Redirection après le succès
-                        } else {
-                            alert("Erreur lors de la création de l'annonce.");
                         }
                     })
                     .catch(error => {
@@ -76,6 +78,7 @@ document.addEventListener("DOMContentLoaded", function() {
         }
     });
 });
+
 
 
 function previewMultipleImages(event) {
