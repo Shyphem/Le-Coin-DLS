@@ -106,12 +106,6 @@ app.post('/api/connexion', async (req, res) => {
 
 
 
-
-
-
-
-
-
 // Route pour créer une annonce
 app.post('/api/creer-annonce', async (req, res) => {
     const { titre, categorieNom, prix, description, etat, image, email } = req.body; // image contient les images encodées en JSON
