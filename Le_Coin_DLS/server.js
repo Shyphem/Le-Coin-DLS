@@ -9,6 +9,7 @@ const socketIo = require('socket.io');
 const app = express();
 const server = http.createServer(app);
 const io = socketIo(server);
+const session = require('express-session');
 const port = 3000;
 
 // Middleware pour parser les requêtes JSON avec une taille maximale
@@ -17,6 +18,26 @@ app.use(bodyParser.urlencoded({ extended: true, limit: '10mb' }));
 
 // Middleware pour servir les fichiers statiques du dossier public
 app.use(express.static(path.join(__dirname, 'public')));
+
+// Middleware de session
+app.use(session({
+    secret: 'p%4ekb5t@2td#!o9AAM*M9#s3Z8u9vvAQWsEDVaz%fcVoos@8j',
+    resave: false,
+    saveUninitialized: true,
+    cookie: { secure: false } // En mode non HTTPS, mettre secure: false
+}));
+
+
+// Middleware de vérification de l'admin avant d'afficher la page admin.html
+app.get('/admin.html', (req, res) => {
+    // Vérifier si l'utilisateur est authentifié et est admin
+    if (!req.session.isAdmin) {
+        return res.redirect('/index.html');  // Rediriger vers la page d'accueil s'il n'est pas admin
+    }
+
+    // Si l'utilisateur est un admin, servir la page admin.html
+    res.sendFile(path.join(__dirname, 'admin.html'));
+});
 
 // Configuration de la connexion à la base de données
 const dbConfig = {
@@ -77,8 +98,6 @@ app.post('/api/inscription', async (req, res) => {
 
 
 
-
-// Route pour la connexion
 app.post('/api/connexion', async (req, res) => {
     const { email, password } = req.body;
 
@@ -103,20 +122,37 @@ app.post('/api/connexion', async (req, res) => {
             return;
         }
 
-        // Si tout est bon, envoyer les détails de l'utilisateur avec date de création
-        res.json({ success: true, user: { email: user.email, pseudo: user.pseudo, date_creation: user.date_creation } });
+        // Si l'email est celui de l'administrateur, on stocke l'info dans la session
+        if (email === 'a.lecoindls@lyceedelasalle.fr') {
+            req.session.isAdmin = true;
+            res.json({
+                success: true,
+                redirect: 'admin.html',  // Redirection vers admin.html
+                user: {
+                    email: user.email,
+                    pseudo: user.pseudo  // Vous pouvez ajouter d'autres informations si nécessaire
+                }
+            });
+        } else {
+            req.session.isAdmin = false;
+            res.json({
+                success: true,
+                redirect: 'index.html',  // Redirection vers la page d'accueil
+                user: {
+                    email: user.email,
+                    pseudo: user.pseudo
+                }
+            });
+        }
+
+        // Sauvegarder l'email de l'utilisateur dans la session
+        req.session.email = email;
+
     } catch (error) {
         console.error("Erreur lors de la connexion :", error);
         res.json({ success: false, message: "Erreur lors de la connexion." });
     }
 });
-
-
-
-
-
-
-
 
 
 // Route pour créer une annonce
@@ -187,22 +223,31 @@ app.post('/api/creer-annonce', async (req, res) => {
 
 
 
-// Route pour récupérer toutes les annonces avec le nom de la catégorie
+// Route pour récupérer les annonces
 app.get('/api/annonces', async (req, res) => {
     const query = req.query.query ? `%${req.query.query}%` : '%';
     const categorie = req.query.categorie || '';
     const etat = req.query.etat || '';
     const prixMax = req.query.prix_max || Number.MAX_VALUE;
+    const reported = req.query.reported || 0; // Ajout d'un filtre pour 'reported'
 
-    let sql = `
+    // Construire la requête SQL de base
+    let sql = ` 
         SELECT a.*, c.nom AS categorie_nom 
         FROM annonces a 
         JOIN categories c ON a.categorie_id = c.id 
-        WHERE a.titre LIKE ? AND a.reported = 0 AND vendu = 0 
+        WHERE a.titre LIKE ? AND a.vendu = 0
     `;
     const params = [query];
 
-    // Appliquer les filtres
+    // Si 'reported' est égal à 1, filtrer pour les annonces signalées
+    if (reported == 1) {
+        sql += ' AND a.reported = 1';
+    } else {
+        sql += ' AND a.reported = 0'; // Ne récupérer que les annonces non signalées par défaut
+    }
+
+    // Appliquer les autres filtres
     if (categorie) {
         sql += ' AND c.nom = ?';
         params.push(categorie);
@@ -222,14 +267,12 @@ app.get('/api/annonces', async (req, res) => {
         const connection = await mysql.createConnection(dbConfig);
         const [annonces] = await connection.execute(sql, params);
         await connection.end();
-        console.log("Annonces récupérées :", annonces);
         res.json(annonces);
     } catch (error) {
         console.error("Erreur lors de la récupération des annonces :", error);
         res.status(500).json({ message: "Erreur lors de la récupération des annonces." });
     }
 });
-
 
 
 
@@ -277,6 +320,21 @@ app.put('/api/annonces/:id/report', async (req, res) => {
 });
 
 
+// Route pour "valider" une annonce, c'est-à-dire mettre à jour 'reported' à 0
+app.put('/api/annonces/:id/validate', async (req, res) => {
+    const annonceId = req.params.id;
+
+    try {
+        const connection = await mysql.createConnection(dbConfig);
+        await connection.execute(`UPDATE annonces SET reported = 0 WHERE id = ?`, [annonceId]);
+        await connection.end();
+
+        res.status(200).json({ message: "Annonce validée avec succès." });
+    } catch (error) {
+        console.error("Erreur lors de la mise à jour de l'annonce validée :", error);
+        res.status(500).json({ message: "Erreur lors de la validation de l'annonce." });
+    }
+});
 
 
 
@@ -528,7 +586,6 @@ io.on('connection', (socket) => {
     socket.on('disconnect', () => {
     });
 });
-
 
 // Lancer le serveur
 app.listen(port, () => {

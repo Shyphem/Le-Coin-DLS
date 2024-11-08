@@ -5,7 +5,7 @@ document.addEventListener("DOMContentLoaded", async function() {
     try {
         const response = await fetch(`/api/annonces/${annonceId}`);
         if (!response.ok) {
-            throw new Error(`Erreur lors de la récupération de l'annonce, statut: ${response.status}`);
+            throw new Error(`Erreur lors de la rÃ©cupÃ©ration de l'annonce, statut: ${response.status}`);
         }
 
         const annonce = await response.json();
@@ -20,48 +20,52 @@ document.addEventListener("DOMContentLoaded", async function() {
             }
         }
 
-        let imagesHtml = `
+        let imagesHtml = ` 
             <div class="image-container">
-              <button class="nav-button left" onclick="changeImage(-1)">&#10094;</button>
-              <img src="${images[0]}" alt="Image 1" id="current-image" />
-              <button class="nav-button right" onclick="changeImage(1)">&#10095;</button>
+                <button class="nav-button left" onclick="changeImage(-1)">&#10094;</button>
+                <img src="${images[0]}" alt="Image 1" id="current-image" />
+                <button class="nav-button right" onclick="changeImage(1)">&#10095;</button>
             </div>
         `;
 
         annonceDetails.innerHTML = `
             ${imagesHtml}
             <h2>${annonce.titre}</h2>
-            <p><strong>Catégorie :</strong> ${annonce.categorie_nom}</p>
+            <p><strong>CatÃ©gorie :</strong> ${annonce.categorie_nom}</p>
             <p><strong>Description :</strong> ${annonce.description}</p>
-            <p><strong>État :</strong> ${annonce.etat}</p>
-            <p><strong>Prix :</strong> ${annonce.prix}€</p>
+            <p><strong>Ã‰tat :</strong> ${annonce.etat}</p>
+            <p><strong>Prix :</strong> ${annonce.prix}â‚¬</p>
             <p><strong>Date de publication :</strong> ${new Date(annonce.date_creation).toLocaleDateString('fr-FR')}</p>
-            <button id="report">Signaler l'annonce</button>
+            <button id="valid">Valider l'annonce</button>
             <button onclick="supprimerAnnonce('${annonce.id}')">Supprimer</button>
         `;
 
-        document.getElementById("report").addEventListener("click", async function() {
-        if (confirm("Êtes-vous sûr de vouloir signaler cette annonce ?")) {
-            try {
-                const reportResponse = await fetch(`/api/annonces/${annonceId}/report`, {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json'
+        // Ajouter un Ã©vÃ©nement pour valider l'annonce
+        document.getElementById("valid").addEventListener("click", async function() {
+            if (confirm("ÃŠtes-vous sÃ»r de vouloir valider cette annonce ?")) {
+                try {
+                    const validationResponse = await fetch(`/api/annonces/${annonceId}/validate`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                    });
+
+                    if (!validationResponse.ok) {
+                        throw new Error(`Erreur lors de la validation de l'annonce : ${validationResponse.status}`);
                     }
-                });
-            
-                if (!reportResponse.ok) {
-                    throw new Error(`Erreur lors du signalement de l'annonce : ${reportResponse.status}`);
+
+                    alert("L'annonce a Ã©tÃ© validÃ©e avec succÃ¨s.");
+                    document.location.reload(); // Recharger la page pour mettre Ã  jour l'affichage
+
+                } catch (error) {
+                    console.error("Erreur lors de la validation :", error);
+                    alert("Une erreur est survenue lors de la validation de l'annonce.");
                 }
-
-                alert("L'annonce a été signalée avec succès.");
-            } catch (error) {
-                console.error("Erreur lors du signalement :", error);
-                alert("Une erreur est survenue lors du signalement de l'annonce.");
             }
-        }
-    });
+        });
 
+        // Fonction pour changer d'image
         window.changeImage = function(direction) {
             currentIndex = (currentIndex + direction + images.length) % images.length;
             displayImage(currentIndex);
@@ -69,20 +73,21 @@ document.addEventListener("DOMContentLoaded", async function() {
 
     } catch (error) {
         console.error("Erreur :", error);
-        document.getElementById("annonce-details").innerHTML = "<p>Erreur lors de la récupération de l'annonce.</p>";
+        document.getElementById("annonce-details").innerHTML = "<p>Erreur lors de la rÃ©cupÃ©ration de l'annonce.</p>";
     }
 });
 
+
 function contacterVendeur(email) {
     if (!email) {
-        console.error("Email du vendeur non défini.");
+        console.error("Email du vendeur non dÃ©fini.");
         return;
     }
     window.location.href = `/chat.html?email=${encodeURIComponent(email)}`;
 }
 
 function supprimerAnnonce(id) {
-    if (confirm("Êtes-vous sûr de vouloir supprimer cette annonce ?")) {
+    if (confirm("ÃŠtes-vous sÃ»r de vouloir supprimer cette annonce ?")) {
         fetch('/api/supprimer-annonce', {
             method: 'DELETE',
             headers: {
