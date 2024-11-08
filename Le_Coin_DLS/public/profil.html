@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Le Coin DLS - Profil</title>
+    <link rel="stylesheet" href="css/header.css">
+    <link rel="stylesheet" href="css/common.css">
+    <link rel="stylesheet" href="css/profil.css">
+    <link rel="stylesheet" href="css/annonce.css">
+    <link rel="stylesheet" href="css/footer.css">
+
+    <!-- Font Awesome pour les icônes -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+    <!-- Google Fonts pour une belle typographie -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <script src="js/profil.js" defer></script>
+    <script src="js/commun.js"></script>
+</head>
+<body>
+    <script>document.addEventListener("DOMContentLoaded", function() {
+        const utilisateurConnecte = JSON.parse(localStorage.getItem("utilisateurConnecte"));
+    
+        if (!utilisateurConnecte) {
+            window.location.href = "connexion.html"; // Redirection vers la page de connexion si non connecté
+        }
+        });
+    </script>
+
+    <!-- Barre de navigation -->
+    <header>
+        <nav class="navbar">
+            <div class="logo">
+                <img src="img/logo.png" width="100px">
+                <h1>Le Coin DLS</h1>
+            </div>
+            <ul class="nav-links">
+                <li><i class="fa-solid fa-house"></i><a href="index.html">Accueil</a></li>
+                <li><i class="fa-solid fa-rectangle-list"></i><a href="liste-annonce.html">Annonces</a></li>
+                <li><i class="fa-solid fa-circle-plus"></i><a href="creer-annonce.html">Créer une annonce</a></li>
+                <li><i class="fa-solid fa-comments"></i><a href="messages.html">Messages</a></li>
+                <li><i class="fa-solid fa-user"></i><a href="profil.html">Profil</a></li>
+            </ul>
+            <div class="hamburger" onclick="toggleMenu()">
+                <i class="fa fa-bars"></i>
+            </div>
+        </nav>
+    </header>
+
+     <!-- Section des informations du profil -->
+     <section class="profil">
+        <h1>Mon Profil : </h2>
+        <p><strong>Email :</strong> <span id="user-email"></span></p>
+        <p><strong>Pseudo :</strong> <span id="user-pseudo"></span></p>
+        <p><strong>Date d'inscription :</strong> <span id="user-date"></span></p>
+        <!-- Supprimer son compte -->
+        <button id="supprimer-compte" class="btn-danger">Supprimer mon compte</button>
+        
+
+
+
+        <h2>Mes Annonces : </h3>
+        <div id="annonce-details"></div>
+
+    </section>
+
+    <!-- Pied de page -->
+    <footer>
+        <p>&copy; 2024 Le Coin DLS. Tous droits réservés.</p>
+        <ul class="footer-links">
+            <li><a href="mentions-legales.html">Mentions légales</a></li>
+            <li><a href="confidentialite.html">Politique de confidentialité</a></li>
+            <li><a href="contact.html">Contact</a></li>
+        </ul>
+    </footer>
+</body>
+</html>
+
+
+
