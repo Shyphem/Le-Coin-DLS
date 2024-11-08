@@ -10,7 +10,7 @@ document.addEventListener("DOMContentLoaded", function() {
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    const { email, pseudo, dateInscription, annonces } = data; // Inclure les annonces
+                    const { email, pseudo, dateInscription, annonces, categorie } = data; // Inclure les annonces
 
                     // Convertir la date d'inscription en un format lisible
                     const dateObj = new Date(dateInscription);
@@ -46,6 +46,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
 // Fonction pour afficher les annonces de l'utilisateur
 function afficherAnnoncesUtilisateur(annonces) {
+    console.log("Données des annonces reçues :", annonces);
     const annonceDetails = document.getElementById("annonce-details");
     annonceDetails.innerHTML = ''; // Vider le conteneur avant d'afficher
 
@@ -56,6 +57,7 @@ function afficherAnnoncesUtilisateur(annonces) {
         annonces.forEach(annonce => {
             const annonceDiv = document.createElement("div");
             annonceDiv.classList.add("annonce-card");
+
             // Récupérer la chaîne Base64 de l'image et la séparer
             const imageSrc = annonce.image;
             const images = imageSrc.split("data:image/jpeg;base64,");
@@ -65,7 +67,8 @@ function afficherAnnoncesUtilisateur(annonces) {
 
             // Garder uniquement la première image
             const firstImage = images.length > 0 ? `data:image/jpeg;base64,${images[0]}` : '';
-            const categorie = annonce.categorie_nom;
+
+            // Utiliser `categorie_nom` avec une valeur par défaut
 
             annonceDiv.innerHTML = `
                 <img src="${firstImage}" alt="${annonce.titre}">

@@ -222,6 +222,7 @@ app.get('/api/annonces', async (req, res) => {
         const connection = await mysql.createConnection(dbConfig);
         const [annonces] = await connection.execute(sql, params);
         await connection.end();
+        console.log("Annonces récupérées :", annonces);
         res.json(annonces);
     } catch (error) {
         console.error("Erreur lors de la récupération des annonces :", error);
@@ -279,7 +280,6 @@ app.put('/api/annonces/:id/report', async (req, res) => {
 
 
 
-// Route pour récupérer le profil de l'utilisateur
 app.get('/profil', async (req, res) => {
     const email = req.query.email; // Email passé en paramètre
 
@@ -295,8 +295,8 @@ app.get('/profil', async (req, res) => {
         if (userResult.length > 0) {
             const utilisateur = userResult[0];
 
-            // Récupérer les annonces de l'utilisateur
-            const sqlAnnonces = 'SELECT * FROM annonces WHERE email_utilisateur = ?';
+            // Récupérer les annonces de l'utilisateur avec la catégorie
+            const sqlAnnonces = 'SELECT a.*, c.nom AS categorie_nom FROM annonces a JOIN categories c ON a.categorie_id = c.id WHERE a.email_utilisateur = ?';
             const [annoncesResult] = await connection.execute(sqlAnnonces, [email]);
 
             res.send({
@@ -304,7 +304,7 @@ app.get('/profil', async (req, res) => {
                 email: utilisateur.email,
                 pseudo: utilisateur.pseudo,
                 dateInscription: utilisateur.date_creation,
-                annonces: annoncesResult // Ajoutez les annonces ici
+                annonces: annoncesResult // Annonces avec catégorie_nom
             });
         } else {
             res.status(404).send({ success: false, message: "Utilisateur non trouvé." });
