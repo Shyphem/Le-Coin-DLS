@@ -2,6 +2,7 @@ const express = require('express');
 const mysql = require('mysql2/promise');
 const bcrypt = require('bcrypt');
 const bodyParser = require('body-parser');
+const fs = require('fs'); // Pour lire le fichier insultes.txt
 const path = require('path');
 const http = require('http');
 const socketIo = require('socket.io');
@@ -11,9 +12,8 @@ const io = socketIo(server);
 const port = 3000;
 
 // Middleware pour parser les requêtes JSON avec une taille maximale
-app.use(bodyParser.json({ limit: '10mb' })); 
-app.use(bodyParser.urlencoded({ extended: true, limit: '10mb' })); 
-
+app.use(bodyParser.json({ limit: '10mb' }));
+app.use(bodyParser.urlencoded({ extended: true, limit: '10mb' }));
 
 // Middleware pour servir les fichiers statiques du dossier public
 app.use(express.static(path.join(__dirname, 'public')));
@@ -27,6 +27,13 @@ const dbConfig = {
 };
 
 const pool = mysql.createPool(dbConfig);
+
+// Charger la liste des insultes depuis le fichier insultes.txt
+const insultes = fs.readFileSync('insultes.txt', 'utf-8').split('\n').map(insulte => insulte.trim());
+
+function contientInsulte(texte) {
+    return insultes.some(insulte => texte.toLowerCase().includes(insulte));
+}
 
 
 // Route pour l'inscription
@@ -119,6 +126,11 @@ app.post('/api/creer-annonce', async (req, res) => {
     let connection;
 
     try {
+        // Vérification des insultes dans le titre et la description
+        if (contientInsulte(titre) || contientInsulte(description)) {
+            return res.status(400).json({ message: "Le titre ou la description contient un mot interdit." });
+        }
+
         // Créer une connexion à la base de données
         connection = await mysql.createConnection(dbConfig);
 
@@ -131,17 +143,16 @@ app.post('/api/creer-annonce', async (req, res) => {
 
         const categorieId = result[0].id;
 
-        // Conversion de la date actuelle au format compatible
         const dateCreation = new Date().toISOString().replace('T', ' ').slice(0, 19); // Format YYYY-MM-DD HH:MM:SS
 
-        // Insertion de l'annonce dans la base de données
+        
         const annonce = {
             titre,
             categorie_id: categorieId,
             prix,
             description,
             etat,
-            image: JSON.stringify(image), // Sauvegarde l'image comme JSON
+            image: JSON.stringify(image), 
             email_utilisateur: email,
             date_creation: dateCreation
         };
@@ -154,7 +165,7 @@ app.post('/api/creer-annonce', async (req, res) => {
                 annonce.prix,
                 annonce.description,
                 annonce.etat,
-                annonce.image, // JSON.stringify() pour stocker le tableau d'images encodées en JSON
+                annonce.image, 
                 annonce.email_utilisateur,
                 annonce.date_creation
             ]
@@ -166,11 +177,10 @@ app.post('/api/creer-annonce', async (req, res) => {
         res.status(500).json({ message: "Erreur lors de la création de l'annonce" });
     } finally {
         if (connection) {
-            await connection.end(); // Fermer la connexion
+            await connection.end(); 
         }
     }
 });
-
 
 
 
@@ -188,7 +198,7 @@ app.get('/api/annonces', async (req, res) => {
         SELECT a.*, c.nom AS categorie_nom 
         FROM annonces a 
         JOIN categories c ON a.categorie_id = c.id 
-        WHERE a.titre LIKE ?
+        WHERE a.titre LIKE ? AND a.reported = 0 AND vendu = 0 
     `;
     const params = [query];
 
@@ -232,7 +242,7 @@ app.get('/api/annonces/:id', async (req, res) => {
             SELECT a.*, c.nom AS categorie_nom
             FROM annonces a
             JOIN categories c ON a.categorie_id = c.id
-            WHERE a.id = ?
+            WHERE a.id = ? 
         `, [annonceId]);
 
         await connection.end();
@@ -245,6 +255,23 @@ app.get('/api/annonces/:id', async (req, res) => {
     } catch (error) {
         console.error("Erreur lors de la récupération de l'annonce :", error);
         res.status(500).json({ message: "Erreur lors de la récupération de l'annonce." });
+    }
+});
+
+
+
+app.put('/api/annonces/:id/report', async (req, res) => {
+    const annonceId = req.params.id;
+
+    try {
+        const connection = await mysql.createConnection(dbConfig);
+        await connection.execute(`UPDATE annonces SET reported = 1 WHERE id = ?`, [annonceId]);
+        await connection.end();
+
+        res.status(200).json({ message: "Annonce signalée avec succès." });
+    } catch (error) {
+        console.error("Erreur lors de la mise à jour de l'annonce signalée :", error);
+        res.status(500).json({ message: "Erreur lors du signalement de l'annonce." });
     }
 });
 
@@ -377,6 +404,7 @@ app.get('/api/dernieres-annonces', async (req, res) => {
             SELECT * 
             FROM annonces 
             WHERE vendu = 0 
+            AND reported = 0
             ORDER BY date_creation DESC 
             LIMIT 4
         `);
@@ -412,7 +440,6 @@ app.put('/api/marquer-vendu', async (req, res) => {
                 try {
                     const deleteSql = "DELETE FROM annonces WHERE id = ?";
                     await connection.execute(deleteSql, [id]);
-                    console.log(`Annonce avec ID ${id} supprimée après 3 jours.`);
                 } catch (deleteErr) {
                     console.error("Erreur lors de la suppression de l'annonce après 3 jours :", deleteErr);
                 }
@@ -472,7 +499,6 @@ app.delete('/api/supprimer-compte', async (req, res) => {
 
 // Connexion Socket.IO pour le chat
 io.on('connection', (socket) => {
-    console.log('Nouvel utilisateur connecté');
 
     // Réception des messages envoyés par les utilisateurs
     socket.on('envoyer_message', async (data) => {
@@ -491,7 +517,6 @@ io.on('connection', (socket) => {
             // Transmettre le message à tous les clients
             io.emit('nouveau_message', data);
 
-            console.log("Message inséré dans la base de données :", data);
 
             // Fermer la connexion à la base de données
             await connection.end();
@@ -501,7 +526,6 @@ io.on('connection', (socket) => {
     });
 
     socket.on('disconnect', () => {
-        console.log('Utilisateur déconnecté');
     });
 });
 
