@@ -1,0 +1,87 @@
+
+/* Styles pour les détails de l'annonce */
+.details-annonce {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: white;
+    padding: 20px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
+}
+
+#annonce-details img {
+    width: 100%;
+    max-height: 300px;
+    object-fit: cover;
+    border-radius: 10px;
+    margin-bottom: 20px;
+}
+
+#annonce-details h2 {
+    font-size: 27px;
+    margin-bottom: 50px;
+    text-align: center;
+    color: #333;
+}
+
+#annonce-details p {
+    font-size: 16px;
+    margin-bottom: 10px;
+    color: #666;
+}
+
+.image-container {
+    position: relative;
+    display: inline-block; /* Centrer l'image et les boutons ensemble */
+}
+
+/* Styles pour les boutons de navigation */
+.nav-button {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-100%);
+    width: 40px;
+    height: 40px;
+    background-color: #2980B9;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    font-size: 18px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.nav-button:hover {
+    background-color: #1e6391;
+}
+
+.nav-button.left {
+    left: -20px; /* Positionne le bouton gauche légèrement à gauche de l'image */
+}
+
+.nav-button.right {
+    right: -20px; /* Positionne le bouton droit légèrement à droite de l'image */
+}
+
+
+button {
+    width: 100%;
+    padding: 12px;
+    background-color: #2980B9;
+    color: white;
+    font-size: 16px;
+    font-weight: bold;
+    text-align: center;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-top: 20px;
+}
+
+button:hover {
+    background-color: #1e6391;
+}
