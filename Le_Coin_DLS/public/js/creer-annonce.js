@@ -120,7 +120,8 @@ function previewMultipleImages(event) {
 function showCustomAlert(message) {
   Swal.fire({
     title: message,
-    confirmButtonText: 'Ok'
+    confirmButtonText: 'Ok',
+    confirmButtonColor: '#2980B9',
   });
 }
 
