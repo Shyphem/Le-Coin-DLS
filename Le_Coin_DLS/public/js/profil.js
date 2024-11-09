@@ -1,6 +1,8 @@
 document.addEventListener("DOMContentLoaded", function() {
-    // Récupérer les informations de l'utilisateur connecté depuis le localStorage
     const utilisateurConnecte = JSON.parse(localStorage.getItem("utilisateurConnecte"));
+    if (!utilisateurConnecte) {
+      window.location.href = "connexion.html"; // Redirection vers la page de connexion si non connecté
+    }
     
     if (utilisateurConnecte) {
         const { email } = utilisateurConnecte;
@@ -28,7 +30,7 @@ document.addEventListener("DOMContentLoaded", function() {
                     // Afficher les annonces liées à l'utilisateur
                     afficherAnnoncesUtilisateur(annonces); // Passer les annonces à la fonction
                 } else {
-                    alert(data.message);
+                    showCustomAlert(data.message);
                 }
             })
             .catch(error => {
@@ -105,7 +107,7 @@ function supprimerAnnonce(id) {
                 localStorage.setItem("annonces", JSON.stringify(annonces));
                 document.location.reload(); // Recharger la page pour voir les changements
             } else {
-                alert("Une erreur est survenue lors de la suppression de l'annonce.");
+                showCustomAlert("Une erreur est survenue lors de la suppression de l'annonce.");
             }
         })
         .catch(error => {
@@ -127,11 +129,11 @@ function supprimerCompte(email) {
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                alert("Votre compte a été supprimé avec succès.");
+                showCustomAlert("Votre compte a été supprimé avec succès.");
                 localStorage.removeItem("utilisateurConnecte"); // Retirer les données de l'utilisateur du localStorage
                 window.location.href = "connexion.html"; // Rediriger vers la page de connexion
             } else {
-                alert(data.message); // Affichez le message d'erreur
+                showCustomAlert(data.message); // Affichez le message d'erreur
             }
         })
         .catch(error => {
@@ -153,14 +155,22 @@ function marquerVendu(id) {
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                alert("Annonce marquée comme vendue !");
+                showCustomAlert("Annonce marquée comme vendue !");
                 document.location.reload(); // Recharger la page pour voir les changements
             } else {
-                alert("Une erreur est survenue lors de la mise à jour de l'annonce.");
+                showCustomAlert("Une erreur est survenue lors de la mise à jour de l'annonce.");
             }
         })
         .catch(error => {
             console.error("Erreur :", error);
         });
     }
+}
+
+
+function showCustomAlert(message) {
+  Swal.fire({
+    title: message,
+    confirmButtonText: 'Ok'
+  });
 }

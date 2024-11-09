@@ -25,10 +25,9 @@ document.addEventListener("DOMContentLoaded", function() {
             // Fonction pour lire chaque fichier image
             const readFiles = (index) => {
                 if (index >= imageInput.files.length) {
-                    // Une fois toutes les images lues, créez l'annonce
                     const annonce = {
                         titre: titre,
-                        categorieNom: categorie, // Changer 'categorie' à 'categorieNom'
+                        categorieNom: categorie,
                         prix: prix,
                         description: description,
                         etat: etat,
@@ -45,19 +44,19 @@ document.addEventListener("DOMContentLoaded", function() {
                         },
                         body: JSON.stringify(annonce)
                     })
-                    .then(response => response.json())  // Assurez-vous de traiter la réponse JSON
+                    .then(response => response.json())
                     .then(data => {
                         if (data.message) {
                             // Si un message d'erreur est renvoyé par le serveur
-                            alert(data.message);  // Affiche le message d'erreur spécifique
+                            showCustomAlert(data.message);  // Affiche le message d'erreur spécifique
                         } else {
-                            alert("Annonce postée avec succès !");
+                            showCustomAlert("Annonce postée avec succès !");
                             window.location.href = "index.html"; // Redirection après le succès
                         }
                     })
                     .catch(error => {
                         console.error("Erreur:", error);
-                        alert("Une erreur s'est produite.");
+                        showCustomAlert("Une erreur s'est produite.");
                     });
                 } else {
                     const file = imageInput.files[index];
@@ -72,9 +71,9 @@ document.addEventListener("DOMContentLoaded", function() {
                 }
             };
 
-            readFiles(0); // Commencer à lire à partir du premier fichier
+            readFiles(0);
         } else {
-            alert("Veuillez sélectionner au moins une image.");
+            showCustomAlert("Veuillez sélectionner au moins une image.");
         }
     });
 });
@@ -116,3 +115,14 @@ function previewMultipleImages(event) {
         reader.readAsDataURL(file); // Lire chaque fichier en tant qu'URL
     }
 }
+
+
+function showCustomAlert(message) {
+  Swal.fire({
+    title: message,
+    confirmButtonText: 'Ok'
+  });
+}
+
+
+
