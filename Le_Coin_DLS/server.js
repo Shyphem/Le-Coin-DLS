@@ -546,9 +546,12 @@ app.delete('/api/supprimer-compte', async (req, res) => {
 
     try {
         connection = await mysql.createConnection(dbConfig);
-        
-        // Démarrer une transaction pour supprimer le compte et ses annonces
+
+        // Démarrer une transaction pour supprimer le compte et ses données associées
         await connection.beginTransaction();
+
+        // Supprimer les messages associés aux annonces de l'utilisateur
+        await connection.execute('DELETE FROM messages WHERE annonce_id IN (SELECT id FROM annonces WHERE email_utilisateur = ?)', [email]);
 
         // Supprimer les annonces associées à l'utilisateur
         await connection.execute('DELETE FROM annonces WHERE email_utilisateur = ?', [email]);
