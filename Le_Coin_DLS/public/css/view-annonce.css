@@ -33,7 +33,6 @@
 
 .image-container {
     position: relative;
-    display: inline-block; /* Centrer l'image et les boutons ensemble */
 }
 
 /* Styles pour les boutons de navigation */
