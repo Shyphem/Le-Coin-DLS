@@ -1,8 +1,6 @@
 document.addEventListener("DOMContentLoaded", async function() {
     const urlParams = new URLSearchParams(window.location.search);
     const annonceId = urlParams.get('id');
-    
-    console.log("ID de l'annonce récupéré de l'URL :", annonceId);
 
     try {
         const response = await fetch(`/api/annonces/${annonceId}`);
@@ -11,24 +9,17 @@ document.addEventListener("DOMContentLoaded", async function() {
         }
 
         const annonce = await response.json();
-        console.log("Annonce trouvée :", annonce);
-
         const annonceDetails = document.getElementById("annonce-details");
-
         const images = JSON.parse(annonce.image);
-
-        // Initialiser l'index de l'image actuelle
         let currentIndex = 0;
 
-        // Fonction pour afficher l'image actuelle sans ajouter le préfixe
         function displayImage(index) {
             const imgElement = document.getElementById("current-image");
             if (imgElement) {
-                imgElement.src = images[index];  // Utilisation directe sans ajout de "data:image/jpeg;base64,"
+                imgElement.src = images[index];
             }
         }
 
-        // Générer le HTML pour la première image et les boutons
         let imagesHtml = `
             <div class="image-container">
               <button class="nav-button left" onclick="changeImage(-1)">&#10094;</button>
@@ -37,7 +28,6 @@ document.addEventListener("DOMContentLoaded", async function() {
             </div>
         `;
 
-        // Ajouter les détails de l'annonce
         annonceDetails.innerHTML = `
             ${imagesHtml}
             <h2>${annonce.titre}</h2>
@@ -47,14 +37,35 @@ document.addEventListener("DOMContentLoaded", async function() {
             <p><strong>Prix :</strong> ${annonce.prix}€</p>
             <p><strong>Date de publication :</strong> ${new Date(annonce.date_creation).toLocaleDateString('fr-FR')}</p>
             <button id="contact-vendeur-btn">Contacter le vendeur</button>
+            <button id="report">Signaler l'annonce</button>
         `;
 
-        // Ajouter un événement de clic pour le bouton "Contacter le vendeur"
         document.getElementById("contact-vendeur-btn").addEventListener("click", function() {
             contacterVendeur(annonce.email_utilisateur);
         });
 
-        // Fonction pour changer l'image
+        document.getElementById("report").addEventListener("click", async function() {
+        if (confirm("Êtes-vous sûr de vouloir signaler cette annonce ?")) {
+            try {
+                const reportResponse = await fetch(`/api/annonces/${annonceId}/report`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+            
+                if (!reportResponse.ok) {
+                    throw new Error(`Erreur lors du signalement de l'annonce : ${reportResponse.status}`);
+                }
+
+                alert("L'annonce a été signalée avec succès.");
+            } catch (error) {
+                console.error("Erreur lors du signalement :", error);
+                alert("Une erreur est survenue lors du signalement de l'annonce.");
+            }
+        }
+    });
+
         window.changeImage = function(direction) {
             currentIndex = (currentIndex + direction + images.length) % images.length;
             displayImage(currentIndex);
@@ -66,13 +77,10 @@ document.addEventListener("DOMContentLoaded", async function() {
     }
 });
 
-// Fonction pour contacter le vendeur
 function contacterVendeur(email) {
     if (!email) {
         console.error("Email du vendeur non défini.");
         return;
     }
-
-    console.log("Contacter le vendeur à l'adresse :", email);
     window.location.href = `/chat.html?email=${encodeURIComponent(email)}`;
 }

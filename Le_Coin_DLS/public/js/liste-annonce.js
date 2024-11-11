@@ -44,15 +44,19 @@ document.addEventListener("DOMContentLoaded", async function() {
                 const annonceDiv = document.createElement("div");
                 annonceDiv.classList.add("annonce-card");
 
-                // Récupérer la chaîne Base64 de l'image et la séparer
-                const imageSrc = annonce.image;
-                const images = imageSrc.split("data:image/jpeg;base64,");
-                
-                // Supprimer la première chaîne vide résultant de la séparation
-                images.shift();
+                // Récupérer la chaîne Base64 de l'image et vérifier le type de l'image
+                let imageSrc = annonce.image;
+                let firstImage = '';
 
-                // Garder uniquement la première image
-                const firstImage = images.length > 0 ? `data:image/jpeg;base64,${images[0]}` : '';
+                if (imageSrc.includes("data:image/jpeg;base64,")) {
+                    const images = imageSrc.split("data:image/jpeg;base64,");
+                    images.shift(); // Supprimer la première chaîne vide résultant de la séparation
+                    firstImage = images.length > 0 ? `data:image/jpeg;base64,${images[0]}` : '';
+                } else if (imageSrc.includes("data:image/png;base64,")) {
+                    const images = imageSrc.split("data:image/png;base64,");
+                    images.shift(); // Supprimer la première chaîne vide résultant de la séparation
+                    firstImage = images.length > 0 ? `data:image/png;base64,${images[0]}` : '';
+                }
 
                 // Affichage de l'annonce avec la première image seulement
                 annonceDiv.innerHTML = `

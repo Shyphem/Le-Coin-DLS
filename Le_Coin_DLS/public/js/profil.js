@@ -46,9 +46,7 @@ document.addEventListener("DOMContentLoaded", function() {
     }
 });
 
-// Fonction pour afficher les annonces de l'utilisateur
 function afficherAnnoncesUtilisateur(annonces) {
-    console.log("Données des annonces reçues :", annonces);
     const annonceDetails = document.getElementById("annonce-details");
     annonceDetails.innerHTML = ''; // Vider le conteneur avant d'afficher
 
@@ -60,17 +58,15 @@ function afficherAnnoncesUtilisateur(annonces) {
             const annonceDiv = document.createElement("div");
             annonceDiv.classList.add("annonce-card");
 
-            // Récupérer la chaîne Base64 de l'image et la séparer
+            // Récupérer la chaîne Base64 de l'image et déterminer le type d'image
             const imageSrc = annonce.image;
-            const images = imageSrc.split("data:image/jpeg;base64,");
-                
-            // Supprimer la première chaîne vide résultant de la séparation
-            images.shift();
+            let firstImage = '';
 
-            // Garder uniquement la première image
-            const firstImage = images.length > 0 ? `data:image/jpeg;base64,${images[0]}` : '';
-
-            // Utiliser `categorie_nom` avec une valeur par défaut
+            if (imageSrc.includes("data:image/jpeg;base64,")) {
+                firstImage = `data:image/jpeg;base64,${imageSrc.split("data:image/jpeg;base64,")[1]}`;
+            } else if (imageSrc.includes("data:image/png;base64,")) {
+                firstImage = `data:image/png;base64,${imageSrc.split("data:image/png;base64,")[1]}`;
+            }
 
             annonceDiv.innerHTML = `
                 <img src="${firstImage}" alt="${annonce.titre}">
@@ -88,6 +84,7 @@ function afficherAnnoncesUtilisateur(annonces) {
         annonceDetails.innerHTML = "<p>Aucune annonce trouvée.</p>";
     }
 }
+
 
 function supprimerAnnonce(id) {
     if (confirm("Êtes-vous sûr de vouloir supprimer cette annonce ?")) {
